@@ -1,0 +1,3 @@
+- School holidays not terms
+- Initial zoom size
+-

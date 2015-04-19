@@ -20,6 +20,9 @@
 
 <h1>BCC Draft Timeline 2015/16</h1>
 
+<p>Zoom in to see the detail</p>
+<p>CS = children in small groups | CF = children in families | CL = children in large group</p><p>NB. EMCF Celebrations will need to be placed in this schedule when the dates are published</p>
+
 <div id="visualization"></div>
 
 
@@ -108,10 +111,15 @@ var groupData = tabletop.sheets("Groups").all()
   // Create a DataSet (allows two way data-binding)
   
   var options = {
-    groupOrder: 'content',  // groupOrder can be a property name or a sorting function
+    //groupOrder: 'content',  // groupOrder can be a property name or a sorting function
     align: "left",
     stack: true,
-    type : "point"
+    type : "point",
+    orientation: "both",
+    minHeight: "500px",
+    maxHeight: "500px",
+    start: "2015-07-26",
+    timeAxis: {scale: 'day', step: 7}
   };
 
   var timeline = new vis.Timeline(container);
