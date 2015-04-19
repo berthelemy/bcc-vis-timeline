@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Timeline basic demo</title>
+
+  <!-- Load jquery for ajax support -->
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+  <script src="node_modules/vis/dist/vis.js"></script>
+  <link href="node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    body, html {
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="results"></div> 
+ 
+<script>
+ 
+ // ID of the Google Spreadsheet
+ var spreadsheetID = "0Ah-U5iZKuSv0dG9hWm44NDBYeXNUSG42c2V1R0Rab1E";
+ 
+ // Make sure it is public or set to Anyone with link can view 
+ var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od6/public/values?alt=json";
+ 
+
+
+
+ $.getJSON(url, function(data) {
+  var id=0;
+  var entry = data.feed.entry;
+
+  var vis = [];
+
+  $(entry).each(function(){
+    id++;
+    $content = this.gsx$headline.$t;
+    $start = this.gsx$startdate.$t;
+
+    vis[id] = {
+        id:id,
+        content:$content,
+        start:$start
+    };
+
+    console.log(vis[id].content);
+    // $('.results').prepend('<h2>'+id+this.gsx$headline.$t+'</h2><p>'+this.gsx$startdate.$t+'</p>');
+  });
+
+  var visJson = JSON.stringify(vis);
+    console.log(visJson); 
+ });
+ 
+</script>
+</body>
