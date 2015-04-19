@@ -18,14 +18,12 @@
 </head>
 <body>
 
-<h1>Load external data</h1>
+<h1>BCC Draft Timeline</h1>
 
 <div id="visualization"></div>
 
 
 <script>
-
-window.onload = function() { init() };
 
  
  // ID of the Google Spreadsheet
@@ -35,83 +33,88 @@ window.onload = function() { init() };
  //var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od1/public/values?alt=json&callback=";
  
 
- var public_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=' + spreadsheetID + '&output=html';
+ // var public_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=' + spreadsheetID + '&output=html';
 
-  function init() {
-    Tabletop.init( { key: public_spreadsheet_url,
-                     callback: showInfo,
-                     simpleSheet: true } )
-  }
+var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c/pubhtml';
 
+ 
+
+ $(document).ready( function() {
+        Tabletop.init( { key: public_spreadsheet_url,
+                         callback: processData,
+                         wanted: [ "od1", "Groups" ],
+                         debug: true } )
+      })
+        
+
+
+/*
   function showInfo(data, tabletop) {
     alert("Successfully processed!")
     console.log(data);
   }
+*/
+  function processData(data, tabletop) {
+//  $.getJSON(url, function(data) {
+  //string = JSON.stringify(data);
+  //console.log(string);
 
-/*
- $.getJSON(url, function(data) {
-  var i = 0;
-  var entry = data.feed.entry;
-  var visData = [];
-  var groups = [];
-  var id
+  var mainData = tabletop.sheets("od1").all();
 
-  $(entry).each(function(){
+  var items = new vis.DataSet();
+
+  
+
+ for (var g = 0; g < mainData.length; g++) {
     
-    //console.log(entry);
-    $content = this.gsx$headline.$t;
-    $start = this.gsx$startdate.$t;
-    $end = this.gsx$enddate.$t;
-    $group = this.gsx$group.$t;
-
+      start = dateFormat(mainData[g].startdate);
+      type = mainData[g].type;
+      console.log(type);
+      if (type == " era") {
+        type = "range";
+      } else {
+        type = "point";
+      }
+      console.log(type);
     
     
-    start = dateFormat($start);
+    if (mainData[g].enddate) {
+      end = dateFormat(mainData[g].enddate); 
+      
+      } else {
+        end = '';
+      }
+    items.add(
+      {
+        id: g,
+        start : start,
+        content: mainData[g].headline,
+        group: mainData[g].groupid,
+        end: end,
+        type: type
+      }
+      );
+  }
 
-    visData[i] = {
-        id:i+1,
-        content:$content,
-        start:start,
-        group:$group
-    };
 
-    
-    if ($end) {
-      end = dateFormat($end); 
-      visData[i].end = end; 
-    }
-    
+var groupData = tabletop.sheets("Groups").all()
 
+  var groups = new vis.DataSet();
 
+  for (var g = 0; g < groupData.length; g++) {
+    groups.add({id: g, content: groupData[g].groupname});
+  }
 
-
-
-//console.log(visData);
-
-    i++;
-
-    
-  });
-
+ console.log(groups);
 
   var container = document.getElementById('visualization');
   // Create a DataSet (allows two way data-binding)
-  var items = new vis.DataSet(visData);
   
-  extractGroups = listGroups(visData);
-  var groups = new vis.DataSet();
-
-  for (var g = 0; g < extractGroups.length; g++) {
-    groups.add({id: g, content: extractGroups[g]});
-  }
-
-console.log(groups);
-  
-
-  var items = new vis.DataSet(visData);
   var options = {
- //   groupOrder: 'content',  // groupOrder can be a property name or a sorting function
-    align: "left"
+    groupOrder: 'content',  // groupOrder can be a property name or a sorting function
+    align: "left",
+    stack: true,
+    type : "point"
   };
 
   var timeline = new vis.Timeline(container);
@@ -119,31 +122,16 @@ console.log(groups);
   timeline.setGroups(groups);
   timeline.setItems(items);
 
+}
 
-    
- 
-      //console.log(items);
 
-      
-
-      
-      
-
-      // Create a Timeline
-      var timeline = new vis.Timeline(container, items, options);
-
- });
-
- // console.log(visData[1]);
-
-//console.log(dateFormat(date));
 function dateFormat(date) {
   firstSlash = date.indexOf('/');
   lastSlash = date.lastIndexOf('/');
-  year = date.slice(lastSlash + 1,date.length);
+  year = date.slice(lastSlash + 1,lastSlash + 5);
   month = date.slice(0,firstSlash)-1; // JS months are zero indexed
   day = date.slice(firstSlash+1,lastSlash);
-//  console.log(date, year, month, day);
+  //console.log(date, year, month, day);
 
   var date2 = new Date(year, month, day,0,0,0,0);
 //console.log(date2);  
@@ -152,23 +140,9 @@ function dateFormat(date) {
 }
 
 
-function listGroups(inputArray) {
 
-    var outputArray = [];
 
-    var distinct = []
-    for (var i = 0; i < inputArray.length; i++) {
-      if (outputArray.indexOf(inputArray[i].group) == -1) {
-      
-        outputArray.push(inputArray[i].group);
-      }
-    }
-   
-   
-    return outputArray;
-}
 
-*/
 </script>
 
 
