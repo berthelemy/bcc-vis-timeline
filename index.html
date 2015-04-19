@@ -5,8 +5,9 @@
 
   <!-- Load jquery for ajax support -->
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-
+  <script src="node_modules/tabletop/src/tabletop.js"></script>
   <script src="node_modules/vis/dist/vis.js"></script>
+  
   <link href="node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css" />
 
   <style type="text/css">
@@ -17,44 +18,131 @@
 </head>
 <body>
 
-<h1>Load external data</h1>
-<p>
-  This demo shows how to load external data via an ajax call.
-</p>
+<h1>BCC Draft Timeline</h1>
+
 <div id="visualization"></div>
-<div id="loading">loading...</div>
 
-<script type="text/javascript">
-  // load data via an ajax request. When the data is in, load the timeline
-  $.ajax({
-    url: 'http://bcctimeline.localhost:8888/data.json',
-    success: function (data) {
-      // hide the "loading..." message
-      document.getElementById('loading').style.display = 'none';
 
-      // DOM element where the Timeline will be attached
-      var container = document.getElementById('visualization');
+<script>
 
-      // Create a DataSet (allows two way data-binding)
-      var items = new vis.DataSet(data);
-console.log(data);
-console.log(items);
-      // Configuration for the Timeline
-      var options = {};
+ 
+ // ID of the Google Spreadsheet
+ var spreadsheetID = "15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c";
+ 
+ // Make sure it is public or set to Anyone with link can view 
+ //var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od1/public/values?alt=json&callback=";
+ 
 
-      // Create a Timeline
-      var timeline = new vis.Timeline(container, items, options);
-    },
-    error: function (err) {
-      console.log('Error', err);
-      if (err.status === 0) {
-        alert('Failed to load data/basic.json.\nPlease run this example on a server.');
+ // var public_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=' + spreadsheetID + '&output=html';
+
+var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c/pubhtml';
+
+ 
+
+ $(document).ready( function() {
+        Tabletop.init( { key: public_spreadsheet_url,
+                         callback: processData,
+                         wanted: [ "od1", "Groups" ],
+                         debug: true } )
+      })
+        
+
+
+/*
+  function showInfo(data, tabletop) {
+    alert("Successfully processed!")
+    console.log(data);
+  }
+*/
+  function processData(data, tabletop) {
+//  $.getJSON(url, function(data) {
+  //string = JSON.stringify(data);
+  //console.log(string);
+
+  var mainData = tabletop.sheets("od1").all();
+
+  var items = new vis.DataSet();
+
+  
+
+ for (var g = 0; g < mainData.length; g++) {
+    
+      start = dateFormat(mainData[g].startdate);
+      type = mainData[g].type;
+      console.log(type);
+      if (type == " era") {
+        type = "range";
+      } else {
+        type = "point";
       }
-      else {
-        alert('Failed to load data.json.');
+      console.log(type);
+    
+    
+    if (mainData[g].enddate) {
+      end = dateFormat(mainData[g].enddate); 
+      
+      } else {
+        end = '';
       }
-    }
-  });
+    items.add(
+      {
+        id: g,
+        start : start,
+        content: mainData[g].headline,
+        group: mainData[g].groupid,
+        end: end,
+        type: type
+      }
+      );
+  }
+
+
+var groupData = tabletop.sheets("Groups").all()
+
+  var groups = new vis.DataSet();
+
+  for (var g = 0; g < groupData.length; g++) {
+    groups.add({id: g, content: groupData[g].groupname});
+  }
+
+ console.log(groups);
+
+  var container = document.getElementById('visualization');
+  // Create a DataSet (allows two way data-binding)
+  
+  var options = {
+    groupOrder: 'content',  // groupOrder can be a property name or a sorting function
+    align: "left",
+    stack: true,
+    type : "point"
+  };
+
+  var timeline = new vis.Timeline(container);
+  timeline.setOptions(options);
+  timeline.setGroups(groups);
+  timeline.setItems(items);
+
+}
+
+
+function dateFormat(date) {
+  firstSlash = date.indexOf('/');
+  lastSlash = date.lastIndexOf('/');
+  year = date.slice(lastSlash + 1,lastSlash + 5);
+  month = date.slice(0,firstSlash)-1; // JS months are zero indexed
+  day = date.slice(firstSlash+1,lastSlash);
+  //console.log(date, year, month, day);
+
+  var date2 = new Date(year, month, day,0,0,0,0);
+//console.log(date2);  
+
+  return date2;
+}
+
+
+
+
+
 </script>
 
 
