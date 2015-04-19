@@ -5,7 +5,7 @@
 
   <!-- Load jquery for ajax support -->
   <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-
+  <script src="node_modules/tabletop/src/tabletop.js"></script>
   <script src="node_modules/vis/dist/vis.js"></script>
   
   <link href="node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css" />
@@ -25,16 +25,30 @@
 
 <script>
 
+window.onload = function() { init() };
 
  
  // ID of the Google Spreadsheet
  var spreadsheetID = "15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c";
  
  // Make sure it is public or set to Anyone with link can view 
- var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od1/public/values?alt=json&callback=";
+ //var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od1/public/values?alt=json&callback=";
  
 
+ var public_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=' + spreadsheetID + '&output=html';
 
+  function init() {
+    Tabletop.init( { key: public_spreadsheet_url,
+                     callback: showInfo,
+                     simpleSheet: true } )
+  }
+
+  function showInfo(data, tabletop) {
+    alert("Successfully processed!")
+    console.log(data);
+  }
+
+/*
  $.getJSON(url, function(data) {
   var i = 0;
   var entry = data.feed.entry;
@@ -154,7 +168,7 @@ function listGroups(inputArray) {
     return outputArray;
 }
 
-
+*/
 </script>
 
 
