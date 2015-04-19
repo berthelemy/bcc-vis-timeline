@@ -68,22 +68,19 @@ var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/15TidIQ9Ygn
  for (var g = 0; g < mainData.length; g++) {
     
       start = dateFormat(mainData[g].startdate);
-      type = mainData[g].type;
-      console.log(type);
-      if (type == " era") {
-        type = "range";
-      } else {
-        type = "point";
-      }
-      console.log(type);
+      
+      
+      
     
     
     if (mainData[g].enddate) {
       end = dateFormat(mainData[g].enddate); 
-      
+      type = 'range';
       } else {
         end = '';
+        type = 'point'
       }
+      console.log(type);
     items.add(
       {
         id: g,
