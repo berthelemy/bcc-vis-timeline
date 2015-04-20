@@ -14,18 +14,6 @@
     body, html {
       font-family: sans-serif;
     }
-    
-
-
-  /* gray background in weekends, white text color */
-  .vis.timeline .timeaxis .grid.sunday {
-    background: red;
-  }
-  
-  .vis.timeline .timeaxis .text.sunday {
-    color: white;
-  }
-
   </style>
 </head>
 <body>
@@ -34,72 +22,54 @@
 
 <p>CS = children in small groups | CF = children in families | CL = children in large group</p>
 
-<div id="visualization"></div>
-
+<div id="visualization"></div> <!-- Where the timeline will appear -->
 
 <script>
-
  
  // ID of the Google Spreadsheet
- var spreadsheetID = "15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c";
- 
+
  // Make sure it is public or set to Anyone with link can view 
- //var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od1/public/values?alt=json&callback=";
  
-
- // var public_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?hl=en_US&hl=en_US&key=' + spreadsheetID + '&output=html';
-
 var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/15TidIQ9YgnEinL3YAJwX8HEoVHM4xPTiLpnC_XtFi5c/pubhtml';
 
  
-
+// When the page is loaded then run this function
  $(document).ready( function() {
+
+// Initialise tabletop (which reads the Google spreadsheet into a model)
         Tabletop.init( { key: public_spreadsheet_url,
-                         callback: processData,
-                         wanted: [ "od1", "Groups" ],
+                         callback: processData, // the function to run next
+                         wanted: [ "od1", "Groups" ], // the sheets to read
                          debug: true } )
       })
         
 
+// Once tabletop is initialised, run this function
+function processData(data, tabletop) {
 
-/*
-  function showInfo(data, tabletop) {
-    alert("Successfully processed!")
-    console.log(data);
-  }
-*/
-  function processData(data, tabletop) {
-//  $.getJSON(url, function(data) {
-  //string = JSON.stringify(data);
-  //console.log(string);
+  // Process main data table
+  var mainData = tabletop.sheets("od1").all(); // Read data lines from od1 sheet
 
-  var mainData = tabletop.sheets("od1").all();
+  var items = new vis.DataSet(); // initialise a new vis Dataset
 
-  var items = new vis.DataSet();
-
-  
-
- for (var g = 0; g < mainData.length; g++) {
-    
-      start = dateFormat(mainData[g].startdate,"start");
-      
-      
-      
-    
-    
-    if (mainData[g].enddate) {
+  for (var g = 0; g < mainData.length; g++) { // Run through all the data lines
+    start = dateFormat(mainData[g].startdate,"start"); // Reformat the start dates to work with vis
+     
+    if (mainData[g].enddate) { // If an enddate exists, then reformat this too
       end = dateFormat(mainData[g].enddate,"end"); 
-      type = 'range';
+      type = 'range'; // Items with an end date will be displayed as a range
       } else {
         end = '';
         type = 'point'
       }
-    if (mainData[g].groupid == 2) {
+
+    if (mainData[g].groupid == 2) { // If the group is "school dates" then change style
       style = "color: red; background-color: pink;"
     } else {
       style = "";
     }
-    items.add(
+
+    items.add( // Add data into the vis dataset
       {
         id: g,
         start : start,
@@ -110,10 +80,10 @@ var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/15TidIQ9Ygn
         style: style
       }
       );
-  }
+  } // end of for loop
 
-
-var groupData = tabletop.sheets("Groups").all()
+  // Process group data table
+  var groupData = tabletop.sheets("Groups").all()
 
   var groups = new vis.DataSet();
 
@@ -121,11 +91,10 @@ var groupData = tabletop.sheets("Groups").all()
     groups.add({id: g, content: groupData[g].groupname});
   }
 
- console.log(groups);
-
+  // Setup where the timeline will be placed
   var container = document.getElementById('visualization');
-  // Create a DataSet (allows two way data-binding)
   
+  // Setup the vis options
   var options = {
     groupOrder: 'groupid',  // groupOrder can be a property name or a sorting function
     align: "auto",
@@ -136,19 +105,19 @@ var groupData = tabletop.sheets("Groups").all()
     maxHeight: "500px",
     start: "2015-07-26",
     end: "2015-09-30",
-    zoomMax: 5168000000,
+    zoomMax: 5168000000, // the zoom controls are in milliseconds. Keep these close to avoid users getting lost
     zoomMin: 908000000,
     timeAxis: {scale: 'day', step: 1}
   };
 
-  var timeline = new vis.Timeline(container);
-  timeline.setOptions(options);
-  timeline.setGroups(groups);
-  timeline.setItems(items);
+  var timeline = new vis.Timeline(container); // Setup new timeline object
+  timeline.setOptions(options); // Set options
+  timeline.setGroups(groups); // Set groups
+  timeline.setItems(items); // Set items
 
-}
+} // End of timeline processing
 
-
+// Function to reformat dates from the spreadsheet to something vis can work with
 function dateFormat(date,type) {
   var h,m
   firstSlash = date.indexOf('/');
@@ -156,14 +125,13 @@ function dateFormat(date,type) {
   year = date.slice(lastSlash + 1,lastSlash + 5);
   month = date.slice(0,firstSlash)-1; // JS months are zero indexed
   day = date.slice(firstSlash+1,lastSlash);
-  //console.log(date, year, month, day);
-
-  if (type == "end") {
+  
+  if (type == "end") { // Make sure that events with an end date take a whole day
     h = 23;
     m = 59;
   }
 
-  if (type == "start") {
+  if (type == "start") { // Events start at midday (helps locate the points better)
     h = 12;
     m = 0;
   }
@@ -174,12 +142,7 @@ function dateFormat(date,type) {
   return date2;
 }
 
-
-
-
-
 </script>
-
 
 </body>
 </html>
